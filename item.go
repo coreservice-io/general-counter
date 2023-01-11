@@ -181,15 +181,16 @@ func (gctx *GcTx) Commit() error {
 	all_empty := true
 	// pre-check
 	for _, item := range gctx.item_list {
+		if !all_empty {
+			break
+		}
 		switch v := item.(type) {
 		case *GcFunc:
 			all_empty = false
-			continue
 		case *GcOp:
 			if v.Amount != 0 {
 				all_empty = false
 			}
-			continue
 		default:
 			return errors.New("item type error inside itemlist")
 		}

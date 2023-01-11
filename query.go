@@ -34,7 +34,7 @@ func (gcounter_ *GeneralCounter) QueryTotalBatch(gkeys []string, gtype string) (
 	for _, v := range gkeys {
 		ids = append(ids, v+":"+gtype)
 	}
-	query := gcounter_.db.Table(TABLE_NAME_G_COUNTER).Where("id IN ?", ids).Find(result)
+	query := gcounter_.db.Table(TABLE_NAME_G_COUNTER).Where("id IN ?", ids).Find(&result)
 	if query.Error != nil {
 		return nil, query.Error
 	}
