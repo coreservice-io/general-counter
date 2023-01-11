@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/coreservice-io/general_counter"
+	"github.com/coreservice-io/general-counter"
 	"github.com/coreservice-io/log"
 	"github.com/coreservice-io/logrus_log"
 	"gorm.io/gorm"
@@ -20,26 +20,26 @@ func main() {
 	llog.SetLevel(log.TraceLevel)
 
 	gcounter, err := general_counter.NewGeneralCounter(&general_counter.GeneralCounterConfig{
-		Project_name: "", //config your own
+		Project_name: "", // config your own
 		Db_config: &general_counter.DBConfig{
-			Host:     "", //config your own
-			Port:     0,  //config your own
-			DbName:   "", //config your own
-			UserName: "", //config your own
-			Password: "", //config your own
+			Host:     "", // config your own
+			Port:     0,  // config your own
+			DbName:   "", // config your own
+			UserName: "", // config your own
+			Password: "", // config your own
 		},
 		Ecs_config: &general_counter.EcsConfig{
-			Address:  "", //config your own
-			UserName: "", //config your own
-			Password: "", //config your own
+			Address:  "", // config your own
+			UserName: "", // config your own
+			Password: "", // config your own
 		},
 		Redis_config: &general_counter.RedisConfig{
-			Addr:     "",    //config your own
-			Port:     0,     //config your own
-			UserName: "",    //config your own
-			Password: "",    //config your own
-			Prefix:   "",    //config your own
-			UseTLS:   false, //config your own
+			Addr:     "",    // config your own
+			Port:     0,     // config your own
+			UserName: "",    // config your own
+			Password: "",    // config your own
+			Prefix:   "",    // config your own
+			UseTLS:   false, // config your own
 		},
 	}, llog)
 

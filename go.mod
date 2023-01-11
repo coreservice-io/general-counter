@@ -1,4 +1,4 @@
-module github.com/coreservice-io/general_counter
+module github.com/coreservice-io/general-counter
 
 go 1.18
 
