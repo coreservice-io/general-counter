@@ -62,9 +62,9 @@ func NewGeneralCounter(gc_config *GeneralCounterConfig, logger log.Logger) (*Gen
 		return nil, errors.New("name is required")
 	}
 
-	if logger == nil {
-		return nil, errors.New("logger is required")
-	}
+	// if logger == nil {
+	// 	return nil, errors.New("logger is required")
+	// }
 
 	// //
 	spr_jm, spr_job_err := redis_spr.New(redis_spr.RedisConfig{

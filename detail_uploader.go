@@ -23,7 +23,9 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 					var detail_list []*GCounterDetailModel
 					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DETAIL).Order("id asc").Limit(MAX_DETAIL_UPLOAD_ITEMS_NUM).Find(&detail_list).Error
 					if err != nil {
-						gcounter.logger.Errorln(spr_jb_name+"job sql err:", err)
+						if gcounter.logger != nil {
+							gcounter.logger.Errorln(spr_jb_name+"job sql err:", err)
+						}
 						return
 					} else {
 
@@ -40,14 +42,18 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(gcounter.gcounter_config.Project_name+"_"+TABLE_NAME_G_COUNTER_DETAIL, logs)
 
 						if add_log_err != nil {
-							gcounter.logger.Errorln(spr_jb_name+" upload log err:", err)
+							if gcounter.logger != nil {
+								gcounter.logger.Errorln(spr_jb_name+" upload log err:", err)
+							}
 							return
 						}
 
 						if len(sids) > 0 {
 							d_err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DETAIL).Where("id in ?", sids).Delete(&GCounterDetailModel{}).Error
 							if d_err != nil {
-								gcounter.logger.Errorln(spr_jb_name+" detail del sql err:", d_err)
+								if gcounter.logger != nil {
+									gcounter.logger.Errorln(spr_jb_name+" detail del sql err:", d_err)
+								}
 								return
 							}
 						}
@@ -59,7 +65,9 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 						return
 					}
 					if count_err != nil {
-						gcounter.logger.Errorln(spr_jb_name+" after detail del counter sql err:", count_err)
+						if gcounter.logger != nil {
+							gcounter.logger.Errorln(spr_jb_name+" after detail del counter sql err:", count_err)
+						}
 						return
 					}
 
@@ -71,7 +79,9 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 		},
 		// onPanic callback, run if panic happened
 		func(err interface{}) {
-			gcounter.logger.Errorln(spr_jb_name, err)
+			if gcounter.logger != nil {
+				gcounter.logger.Errorln(spr_jb_name, err)
+			}
 		},
 		// job interval in seconds
 		30,
@@ -83,7 +93,9 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 		},
 		// onFinish callback
 		func(inst *job.Job) {
-			gcounter.logger.Errorln(spr_jb_name + " spr job stop")
+			if gcounter.logger != nil {
+				gcounter.logger.Errorln(spr_jb_name + " spr job stop")
+			}
 		},
 	)
 
