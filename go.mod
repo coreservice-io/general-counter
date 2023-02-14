@@ -3,11 +3,11 @@ module github.com/coreservice-io/general-counter
 go 1.18
 
 require (
-	github.com/coreservice-io/ecs_uploader v0.0.8
-	github.com/coreservice-io/gorm_log v0.1.4
-	github.com/coreservice-io/job v0.1.20
-	github.com/coreservice-io/log v0.1.18
-	github.com/coreservice-io/logrus_log v0.1.20
+	github.com/coreservice-io/ecs_uploader v0.2.1
+	github.com/coreservice-io/gorm_log v0.2.1
+	github.com/coreservice-io/job v0.2.1
+	github.com/coreservice-io/log v0.2.1
+	github.com/coreservice-io/logrus_log v0.2.1
 	github.com/coreservice-io/redis_spr v0.1.20
 	github.com/olivere/elastic/v7 v7.0.32
 	gorm.io/driver/mysql v1.4.5
@@ -16,7 +16,7 @@ require (
 
 require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
-	github.com/coreservice-io/safe_go v0.1.4 // indirect
+	github.com/coreservice-io/safe_go v0.2.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.4 // indirect

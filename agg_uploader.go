@@ -18,8 +18,13 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 
 	job.Start(
 		spr_jb_name,
+		job.TYPE_PANIC_REDO,
+		// job interval in seconds
+		30,
+		nil,
+		nil,
 		// job process
-		func() {
+		func(j *job.Job) {
 			if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
 
 				date := time.Now().UTC().Format("2006-01-02")
@@ -61,16 +66,8 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 			}
 		},
 		// onPanic callback, run if panic happened
-		func(err interface{}) {
+		func(j *job.Job, err interface{}) {
 			gcounter.logger.Errorln(spr_jb_name, err)
-		},
-		// job interval in seconds
-		30,
-		job.TYPE_PANIC_REDO,
-		// check continue callback, the job will stop running if return false
-		// the job will keep running if this callback is nil
-		func(job *job.Job) bool {
-			return true
 		},
 		// onFinish callback
 		func(inst *job.Job) {
