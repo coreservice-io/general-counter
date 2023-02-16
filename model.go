@@ -7,32 +7,44 @@ const TABLE_NAME_G_COUNTER_DETAIL = "g_counter_detail"
 // used only in sqldb
 // table name :g_counter
 type GCounterModel struct {
-	Sql_id int64  `json:"sql_id" gorm:"primaryKey"` // auto increasement
-	Id     string `json:"id" gorm:"index;unique"`   // this is elastic id , [gkey]:[gtype]
-	Gkey   string `json:"gkey" gorm:"index"`        // can be anything like 'userid','accountid',etc.
-	Gtype  string `json:"gtype" gorm:"index"`       // can be anything like 'user_credit','account_traffic',etc.
-	Amount int64  `json:"amount" gorm:"index"`
+	Sql_id int64  `json:"sql_id" gorm:"type:bigint(20);primaryKey;"` // auto increasement
+	Id     string `json:"id" gorm:"type:varchar(512);uniqueIndex;"`  // this is elastic id , [gkey]:[gtype]
+	Gkey   string `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
+	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
+	Amount int64  `json:"amount" gorm:"type:bigint(20);index;"`
+}
+
+func (model *GCounterModel) TableName() string {
+	return TABLE_NAME_G_COUNTER
 }
 
 // used in elastic search db
 // table name:g_counter_daily_agg
 type GCounterDailyAggModel struct {
-	Sql_id int64  `json:"sql_id" gorm:"primaryKey"` // db id ,auto increasement
-	Id     string `json:"id" gorm:"index;unique"`   // this is elastic id ,[date]:[gkey]:[gtype] => elastic search id
-	Gkey   string `json:"gkey" gorm:"index"`        // can be anything like 'userid','accountid',etc.
-	Gtype  string `json:"gtype" gorm:"index"`       // can be anything like 'user_credit','account_traffic',etc.
-	Date   string `json:"date" gorm:"index"`
-	Amount int64  `json:"amount"`
+	Sql_id int64  `json:"sql_id" gorm:"type:bigint(20);primaryKey;"` // db id ,auto increasement
+	Id     string `json:"id" gorm:"type:varchar(512);uniqueIndex;"`  // this is elastic id ,[date]:[gkey]:[gtype] => elastic search id
+	Gkey   string `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
+	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
+	Date   string `json:"date" gorm:"type:date;index;"`
+	Amount int64  `json:"amount" gorm:"type:bigint(20);"`
+}
+
+func (model *GCounterDailyAggModel) TableName() string {
+	return TABLE_NAME_G_COUNTER_DAILY_AGG
 }
 
 // used in elastic search db
 // table name :g_counter_detail
 type GCounterDetailModel struct {
-	Sql_id   int64  `json:"sql_id" gorm:"primaryKey"` // db id ,auto increasement
-	Id       string `json:"id" gorm:"index;unique"`   // this is elastic id ,assign db_id => elastic search id
-	Gkey     string `json:"gkey" gorm:"index"`        // can be anything like 'userid','accountid',etc.
-	Gtype    string `json:"gtype" gorm:"index"`       // can be anything like 'user_credit','account_traffic',etc.
-	Datetime string `json:"datetime" gorm:"index"`
-	Amount   int64  `json:"amount"`
-	Msg      string `json:"msg"`
+	Sql_id   int64  `json:"sql_id"  gorm:"type:bigint(20);primaryKey;"` // db id ,auto increasement
+	Id       string `json:"id" gorm:"type:varchar(512);uniqueIndex;"`   // this is elastic id ,assign db_id => elastic search id
+	Gkey     string `json:"gkey" gorm:"type:varchar(512);index;"`       // can be anything like 'userid','accountid',etc.
+	Gtype    string `json:"gtype" gorm:"type:varchar(512);index;"`      // can be anything like 'user_credit','account_traffic',etc.
+	Datetime string `json:"datetime" gorm:"type:datetime(6);index;"`
+	Amount   int64  `json:"amount" gorm:"type:bigint(20);"`
+	Msg      string `json:"msg" gorm:"type:longtext;"`
+}
+
+func (model *GCounterDetailModel) TableName() string {
+	return TABLE_NAME_G_COUNTER_DETAIL
 }
