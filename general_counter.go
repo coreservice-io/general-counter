@@ -68,9 +68,12 @@ func NewGeneralCounter(gc_config *GeneralCounterConfig, logger log.Logger) (*Gen
 
 	// //
 	spr_jm, spr_job_err := redis_spr.New(redis_spr.RedisConfig{
-		Addr:   gc_config.Redis_config.Addr,
-		Port:   gc_config.Redis_config.Port,
-		Prefix: gc_config.Redis_config.Prefix + ":" + "gcounter",
+		Addr:     gc_config.Redis_config.Addr,
+		Port:     gc_config.Redis_config.Port,
+		Password: gc_config.Redis_config.Password,
+		UserName: gc_config.Redis_config.UserName,
+		Prefix:   gc_config.Redis_config.Prefix + ":" + "gcounter",
+		UseTLS:   gc_config.Redis_config.UseTLS,
 	})
 	if spr_job_err != nil {
 		return nil, spr_job_err
