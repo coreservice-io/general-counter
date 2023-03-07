@@ -16,10 +16,11 @@ import (
 )
 
 type GeneralCounterConfig struct {
-	Project_name string
-	Db_config    *DBConfig
-	Ecs_config   *EcsConfig
-	Redis_config *RedisConfig
+	Project_name           string
+	Agg_record_expire_days int
+	Db_config              *DBConfig
+	Ecs_config             *EcsConfig
+	Redis_config           *RedisConfig
 }
 
 type DBConfig struct {
@@ -60,6 +61,10 @@ func NewGeneralCounter(gc_config *GeneralCounterConfig, logger log.Logger) (*Gen
 
 	if gc_config.Project_name == "" {
 		return nil, errors.New("name is required")
+	}
+
+	if gc_config.Agg_record_expire_days <= 0{
+		return nil, errors.New("agg record expire days must > 0")
 	}
 
 	if logger == nil {
@@ -168,6 +173,10 @@ func NewGeneralCounter(gc_config *GeneralCounterConfig, logger log.Logger) (*Gen
 	upload_err = gcounter.startDetailUploader()
 	if upload_err != nil {
 		return nil, upload_err
+	}
+	d_err := gcounter.deleteExpireUploadedAggRecords(gc_config.Agg_record_expire_days)
+	if d_err != nil {
+		return nil, d_err
 	}
 
 	return gcounter, nil

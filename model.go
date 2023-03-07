@@ -18,6 +18,12 @@ func (model *GCounterModel) TableName() string {
 	return TABLE_NAME_G_COUNTER
 }
 
+const (
+	upload_status_uploading = "uploading"
+	upload_status_uploaded  = "uploaded"
+	upload_status_to_upload = "to_upload"
+)
+
 // used in elastic search db
 // table name:g_counter_daily_agg
 type GCounterDailyAggModel struct {
@@ -27,6 +33,7 @@ type GCounterDailyAggModel struct {
 	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
 	Date   string `json:"date" gorm:"type:date;index;"`
 	Amount int64  `json:"amount" gorm:"type:bigint(20);"`
+	Status string `json:"status" gorm:"type:varchar(32);index;"`
 }
 
 func (model *GCounterDailyAggModel) TableName() string {

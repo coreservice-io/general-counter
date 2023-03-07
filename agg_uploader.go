@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/coreservice-io/job"
+	"gorm.io/gorm"
 )
 
 const MAX_AGG_UPLOAD_ITEMS_NUM = 30
@@ -31,13 +32,27 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 
 				for {
 					var agg_list []*GCounterDailyAggModel
-					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("date != ?", date).Order("id asc").Limit(MAX_AGG_UPLOAD_ITEMS_NUM).Find(&agg_list).Error
+					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("status = ? AND date != ?", upload_status_to_upload, date).Order("id asc").Limit(MAX_AGG_UPLOAD_ITEMS_NUM).Find(&agg_list).Error
 					if err != nil {
 						gcounter.logger.Errorln(spr_jb_name+"job sql err:", err)
 						return
 					} else {
 
 						if len(agg_list) == 0 {
+							return
+						}
+
+						ids := []string{}
+						for _, agg := range agg_list {
+							ids = append(ids, agg.Id)
+						}
+
+						// update status => uploading
+						d_err := gcounter.db.Transaction(func(tx *gorm.DB) error {
+							return tx.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("id in ?", ids).Update("status", upload_status_uploading).Error
+						})
+						if d_err != nil {
+							gcounter.logger.Errorln(spr_jb_name+" agg update status to uploading sql err:", d_err)
 							return
 						}
 
@@ -54,14 +69,56 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 						}
 
 						if len(sids) > 0 {
-							d_err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("id in ?", sids).Delete(&GCounterDailyAggModel{}).Error
+
+							// update status => uploaded
+							d_err := gcounter.db.Transaction(func(tx *gorm.DB) error {
+								return tx.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("id in ? AND status = ?", sids, upload_status_uploading).Update("status", upload_status_uploaded).Error
+							})
 							if d_err != nil {
-								gcounter.logger.Errorln(spr_jb_name+" agg del sql err:", d_err)
+								gcounter.logger.Errorln(spr_jb_name+" agg update sql err:", d_err)
 								return
 							}
 						}
 					}
+				}
+			}
+		},
+		// onPanic callback, run if panic happened
+		func(j *job.Job, err interface{}) {
+			gcounter.logger.Errorln(spr_jb_name, err)
+		},
+		// onFinish callback
+		func(inst *job.Job) {
+			gcounter.logger.Debugln(spr_jb_name + " spr job stop")
+		},
+	)
 
+	return nil
+}
+
+func (gcounter *GeneralCounter) deleteExpireUploadedAggRecords(agg_record_expire_days int) error {
+	spr_jb_name := "gcounter_agg_delete_expire_uploaded"
+	err := gcounter.spr_job_mgr.AddSprJob(spr_jb_name)
+	if err != nil {
+		return err
+	}
+
+	job.Start(
+		spr_jb_name,
+		job.TYPE_PANIC_REDO,
+		// job interval in seconds
+		1800,
+		nil,
+		nil,
+		// job process
+		func(j *job.Job) {
+			if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
+
+				// delete uploaded expire record
+				date := time.Now().UTC().AddDate(0, 0, -agg_record_expire_days).Format("2006-01-02")
+				err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("date < ? AND status = ?", date, upload_status_uploaded).Delete(&GCounterDailyAggModel{}).Error
+				if err != nil {
+					gcounter.logger.Errorln(spr_jb_name+" agg del sql err:", err)
 				}
 			}
 		},

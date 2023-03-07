@@ -15,7 +15,13 @@ type GcOpTotalConfig struct {
 }
 
 type GcOpAggConfig struct {
-	Enable bool
+	Enable  bool
+	AggDate *GcAggDate
+}
+type GcAggDate struct {
+	Year  int64
+	Month int64
+	Day   int64
 }
 
 type GcOpDetailConfig struct {
@@ -42,7 +48,7 @@ func (gcop *GcOp) Run(tx *gorm.DB) error {
 		return errors.New("atleast one config required")
 	}
 
-	// /detail
+	// detail
 	if gcop.Detail_config != nil && gcop.Detail_config.Enable {
 
 		to_create := &GCounterDetailModel{
@@ -71,9 +77,14 @@ func (gcop *GcOp) Run(tx *gorm.DB) error {
 		}
 	}
 
-	// /
+	// agg
 	if gcop.Agg_config != nil && gcop.Agg_config.Enable {
-		date := time_now.UTC().Format("2006-01-02")
+		date := ""
+		if gcop.Agg_config.AggDate != nil {
+			date = time.Date(int(gcop.Agg_config.AggDate.Year), time.Month(gcop.Agg_config.AggDate.Month), int(gcop.Agg_config.AggDate.Day), 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+		} else {
+			date = time_now.UTC().Format("2006-01-02")
+		}
 		agg_id := date + ":" + gcop.Gkey + ":" + gcop.Gtype
 
 		to_create_agg := &GCounterDailyAggModel{
@@ -82,10 +93,11 @@ func (gcop *GcOp) Run(tx *gorm.DB) error {
 			Gtype:  gcop.Gtype,
 			Date:   date,
 			Amount: gcop.Amount,
+			Status: upload_status_to_upload,
 		}
 
 		create_result := tx.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Clauses(clause.OnConflict{
-			DoUpdates: clause.Assignments(map[string]interface{}{"amount": gorm.Expr("amount + ?", gcop.Amount)}),
+			DoUpdates: clause.Assignments(map[string]interface{}{"amount": gorm.Expr("amount + ?", gcop.Amount), "status": upload_status_to_upload}),
 		}).Create(to_create_agg)
 
 		if create_result.Error != nil {
@@ -98,6 +110,7 @@ func (gcop *GcOp) Run(tx *gorm.DB) error {
 
 	}
 
+	// total
 	if gcop.Total_config != nil && gcop.Total_config.Enable {
 
 		id := gcop.Gkey + ":" + gcop.Gtype

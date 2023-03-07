@@ -95,16 +95,18 @@ func (gcounter_ *GeneralCounter) QueryAgg(gkey string, gtype string, startDate s
 	query.Where("gtype = ?", gtype)
 	query.Where("date >= ?", startDate)
 	query.Where("date <= ?", endDate)
+	query.Where("status = ?", upload_status_to_upload)  // just ignore uploading and uploaded data
 
 	db_err := query.Find(&db_result).Error
 	if db_err != nil {
 		return nil, db_err
 	}
 
+	// if same key exist in db and ecs, just use db data
 	for _, v := range db_result {
 		_, exist := aggDataMap[v.Date]
 		if exist {
-			aggDataMap[v.Date].Amount += v.Amount
+			aggDataMap[v.Date].Amount = v.Amount
 		} else {
 			aggDataMap[v.Date] = v
 		}
