@@ -15,9 +15,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const default_agg_record_expire_days = 30
+
 type GeneralCounterConfig struct {
 	Project_name           string
-	Agg_record_expire_days int
+	Agg_record_expire_days int64 // if not set, use default default_agg_record_expire_days, ex. if set 1 and today is 2023-01-10, the records which date <= 2023-01-08 will be deleted
 	Db_config              *DBConfig
 	Ecs_config             *EcsConfig
 	Redis_config           *RedisConfig
@@ -63,8 +65,13 @@ func NewGeneralCounter(gc_config *GeneralCounterConfig, logger log.Logger) (*Gen
 		return nil, errors.New("name is required")
 	}
 
-	if gc_config.Agg_record_expire_days <= 0{
-		return nil, errors.New("agg record expire days must > 0")
+	// if not set, use default 30
+	if gc_config.Agg_record_expire_days == 0 {
+		gc_config.Agg_record_expire_days = default_agg_record_expire_days
+	}
+
+	if gc_config.Agg_record_expire_days < 1 {
+		return nil, errors.New("agg record expire days must >= 1")
 	}
 
 	if logger == nil {
@@ -174,7 +181,7 @@ func NewGeneralCounter(gc_config *GeneralCounterConfig, logger log.Logger) (*Gen
 	if upload_err != nil {
 		return nil, upload_err
 	}
-	d_err := gcounter.deleteExpireUploadedAggRecords(gc_config.Agg_record_expire_days)
+	d_err := gcounter.deleteExpireUploadedAggRecords(int(gc_config.Agg_record_expire_days))
 	if d_err != nil {
 		return nil, d_err
 	}

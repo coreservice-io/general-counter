@@ -38,7 +38,7 @@ type GcOp struct {
 	Detail_config *GcOpDetailConfig
 }
 
-func (gcop *GcOp) Run(tx *gorm.DB) error {
+func (gcop *GcOp) run(tx *gorm.DB, aggExpireDays int64) error {
 
 	time_now := time.Now()
 
@@ -81,10 +81,21 @@ func (gcop *GcOp) Run(tx *gorm.DB) error {
 	if gcop.Agg_config != nil && gcop.Agg_config.Enable {
 		date := ""
 		if gcop.Agg_config.AggDate != nil {
-			date = time.Date(int(gcop.Agg_config.AggDate.Year), time.Month(gcop.Agg_config.AggDate.Month), int(gcop.Agg_config.AggDate.Day), 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+			insertTime := time.Date(int(gcop.Agg_config.AggDate.Year), time.Month(gcop.Agg_config.AggDate.Month), int(gcop.Agg_config.AggDate.Day), 0, 0, 0, 0, time.UTC)
+
+			// check insertTime is expire or not
+			t := time.Now().UTC()
+			today := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+			// insert expire data not allowed
+			if insertTime.Unix()-today.Unix() < aggExpireDays*24*3600 {
+				return errors.New("gcop agg insert an expire data")
+			}
+
+			date = insertTime.Format("2006-01-02")
 		} else {
 			date = time_now.UTC().Format("2006-01-02")
 		}
+
 		agg_id := date + ":" + gcop.Gkey + ":" + gcop.Gtype
 
 		to_create_agg := &GCounterDailyAggModel{
@@ -223,7 +234,7 @@ func (gctx *GcTx) Commit() error {
 					return func_err
 				}
 			case *GcOp:
-				op_err := v.Run(tx)
+				op_err := v.run(tx, int64(gctx.gcounter.gcounter_config.Agg_record_expire_days))
 				if op_err != nil {
 					return op_err
 				}
