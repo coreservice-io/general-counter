@@ -6,6 +6,8 @@ import (
 
 const MAX_DETAIL_UPLOAD_ITEMS_NUM = 30
 
+const detail_upload_interval_secs = 30
+
 func (gcounter *GeneralCounter) startDetailUploader() error {
 
 	spr_jb_name := "gcounter_detail_uploader"
@@ -18,7 +20,7 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 		spr_jb_name,
 		job.TYPE_PANIC_REDO,
 		// job interval in seconds
-		30,
+		detail_upload_interval_secs,
 		nil,
 		nil,
 		// job process

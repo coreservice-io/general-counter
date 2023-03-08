@@ -19,9 +19,9 @@ type GcOpAggConfig struct {
 	AggDate *GcAggDate
 }
 type GcAggDate struct {
-	Year  int64
-	Month int64
-	Day   int64
+	Year  int
+	Month int
+	Day   int
 }
 
 type GcOpDetailConfig struct {
@@ -81,7 +81,7 @@ func (gcop *GcOp) run(tx *gorm.DB, aggExpireDays int64) error {
 	if gcop.Agg_config != nil && gcop.Agg_config.Enable {
 		date := ""
 		if gcop.Agg_config.AggDate != nil {
-			insertTime := time.Date(int(gcop.Agg_config.AggDate.Year), time.Month(gcop.Agg_config.AggDate.Month), int(gcop.Agg_config.AggDate.Day), 0, 0, 0, 0, time.UTC)
+			insertTime := time.Date(gcop.Agg_config.AggDate.Year, time.Month(gcop.Agg_config.AggDate.Month), gcop.Agg_config.AggDate.Day, 0, 0, 0, 0, time.UTC)
 
 			// check insertTime is expire or not
 			t := time.Now().UTC()

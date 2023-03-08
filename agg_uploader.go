@@ -9,6 +9,8 @@ import (
 
 const MAX_AGG_UPLOAD_ITEMS_NUM = 30
 
+const agg_upload_interval_secs = 30
+
 func (gcounter *GeneralCounter) startAggUploader() error {
 
 	spr_jb_name := "gcounter_agg_uploader"
@@ -21,7 +23,7 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 		spr_jb_name,
 		job.TYPE_PANIC_REDO,
 		// job interval in seconds
-		30,
+		agg_upload_interval_secs,
 		nil,
 		nil,
 		// job process
@@ -32,7 +34,7 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 
 				for {
 					var agg_list []*GCounterDailyAggModel
-					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("status = ? AND date != ?", upload_status_to_upload, date).Order("id asc").Limit(MAX_AGG_UPLOAD_ITEMS_NUM).Find(&agg_list).Error
+					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("status IN ? AND date != ?", []string{upload_status_uploading, upload_status_to_upload}, date).Order("id asc").Limit(MAX_AGG_UPLOAD_ITEMS_NUM).Find(&agg_list).Error
 					if err != nil {
 						gcounter.logger.Errorln(spr_jb_name+"job sql err:", err)
 						return
@@ -69,7 +71,6 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 						}
 
 						if len(sids) > 0 {
-
 							// update status => uploaded
 							d_err := gcounter.db.Transaction(func(tx *gorm.DB) error {
 								return tx.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("id in ? AND status = ?", sids, upload_status_uploading).Update("status", upload_status_uploaded).Error
@@ -96,6 +97,8 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 	return nil
 }
 
+const delete_expire_agg_interval_secs = 1800
+
 func (gcounter *GeneralCounter) deleteExpireUploadedAggRecords(agg_record_expire_days int) error {
 	spr_jb_name := "gcounter_agg_delete_expire_uploaded"
 	err := gcounter.spr_job_mgr.AddSprJob(spr_jb_name)
@@ -107,14 +110,14 @@ func (gcounter *GeneralCounter) deleteExpireUploadedAggRecords(agg_record_expire
 		spr_jb_name,
 		job.TYPE_PANIC_REDO,
 		// job interval in seconds
-		1800,
+		delete_expire_agg_interval_secs,
 		nil,
 		nil,
 		// job process
 		func(j *job.Job) {
 			if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
-
 				// delete uploaded expire record
+				agg_record_expire_days = agg_record_expire_days + 1 //+1 for safety boundary
 				date := time.Now().UTC().AddDate(0, 0, -agg_record_expire_days).Format("2006-01-02")
 				err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("date < ? AND status = ?", date, upload_status_uploaded).Delete(&GCounterDailyAggModel{}).Error
 				if err != nil {
