@@ -87,7 +87,7 @@ func (gcop *GcOp) run(tx *gorm.DB, aggExpireDays int64) error {
 			t := time.Now().UTC()
 			today := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 			// insert expire data not allowed
-			if insertTime.Unix()-today.Unix() < aggExpireDays*24*3600 {
+			if insertTime.Unix()-today.Unix() < -aggExpireDays*24*3600 {
 				return errors.New("gcop agg insert an expire data")
 			}
 
