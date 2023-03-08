@@ -110,7 +110,7 @@ func NewGeneralCounter(gc_config *GeneralCounterConfig, logger log.Logger) (*Gen
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: gorm_log.New_gormLocalLogger(logger, gorm_log.Config{
 			SlowThreshold:             500 * time.Millisecond,
-			IgnoreRecordNotFoundError: false,
+			IgnoreRecordNotFoundError: true,
 			LogLevel:                  db_log_level,
 		}),
 	})
