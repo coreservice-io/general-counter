@@ -224,6 +224,10 @@ func (gctx *GcTx) Commit() error {
 		return nil
 	}
 
+	// use global lock to avoid db dead lock
+	gctx.gcounter.commit_lock.Lock()
+	defer gctx.gcounter.commit_lock.Unlock()
+
 	//
 	tx_err := gctx.gcounter.db.Transaction(func(tx *gorm.DB) error {
 		for _, item := range gctx.item_list {

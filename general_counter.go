@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/coreservice-io/ecs_uploader/uploader"
@@ -57,6 +58,7 @@ type GeneralCounter struct {
 	spr_job_mgr     *redis_spr.SprJobMgr
 	logger          log.Logger
 	gcounter_config *GeneralCounterConfig
+	commit_lock     sync.Mutex
 }
 
 func NewGeneralCounter(gc_config *GeneralCounterConfig, logger log.Logger) (*GeneralCounter, error) {
