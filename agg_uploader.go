@@ -15,7 +15,7 @@ const agg_upload_interval_secs = 30
 func (gcounter *GeneralCounter) startAggUploader() error {
 
 	spr_jb_name := "gcounter_agg_uploader"
-	err := gcounter.spr_job_mgr.AddSprJob(spr_jb_name)
+	err := gcounter.spr_job_mgr.AddSprJob(context.Background(), spr_jb_name)
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ const delete_expire_agg_interval_secs = 1800
 
 func (gcounter *GeneralCounter) deleteExpireUploadedAggRecords(agg_record_expire_days int) error {
 	spr_jb_name := "gcounter_agg_delete_expire_uploaded"
-	err := gcounter.spr_job_mgr.AddSprJob(spr_jb_name)
+	err := gcounter.spr_job_mgr.AddSprJob(context.Background(), spr_jb_name)
 	if err != nil {
 		return err
 	}

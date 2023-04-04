@@ -13,7 +13,7 @@ const detail_upload_interval_secs = 30
 func (gcounter *GeneralCounter) startDetailUploader() error {
 
 	spr_jb_name := "gcounter_detail_uploader"
-	err := gcounter.spr_job_mgr.AddSprJob(spr_jb_name)
+	err := gcounter.spr_job_mgr.AddSprJob(context.Background(), spr_jb_name)
 	if err != nil {
 		return err
 	}
