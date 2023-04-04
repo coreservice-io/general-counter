@@ -8,7 +8,7 @@ require (
 	github.com/coreservice-io/job v0.3.0
 	github.com/coreservice-io/log v0.2.1
 	github.com/coreservice-io/logrus_log v0.2.1
-	github.com/coreservice-io/redis_spr v0.1.20
+	github.com/coreservice-io/redis_spr v0.1.30
 	github.com/olivere/elastic/v7 v7.0.32
 	gorm.io/driver/mysql v1.4.5
 	gorm.io/gorm v1.24.3
