@@ -1,6 +1,7 @@
 package general_counter
 
 import (
+	"context"
 	"time"
 
 	"github.com/coreservice-io/job"
@@ -20,6 +21,7 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 	}
 
 	job.Start(
+		context.Background(),
 		spr_jb_name,
 		job.TYPE_PANIC_REDO,
 		// job interval in seconds
@@ -107,6 +109,7 @@ func (gcounter *GeneralCounter) deleteExpireUploadedAggRecords(agg_record_expire
 	}
 
 	job.Start(
+		context.Background(),
 		spr_jb_name,
 		job.TYPE_PANIC_REDO,
 		// job interval in seconds

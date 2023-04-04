@@ -1,6 +1,8 @@
 package general_counter
 
 import (
+	"context"
+
 	"github.com/coreservice-io/job"
 )
 
@@ -17,6 +19,7 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 	}
 
 	job.Start(
+		context.Background(),
 		spr_jb_name,
 		job.TYPE_PANIC_REDO,
 		// job interval in seconds
