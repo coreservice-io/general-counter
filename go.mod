@@ -3,9 +3,9 @@ module github.com/coreservice-io/general-counter
 go 1.18
 
 require (
-	github.com/coreservice-io/ecs_uploader v0.3.0
+	github.com/coreservice-io/ecs_uploader v0.4.0
 	github.com/coreservice-io/gorm_log v0.2.1
-	github.com/coreservice-io/job v0.3.0
+	github.com/coreservice-io/job v0.4.0
 	github.com/coreservice-io/log v0.2.1
 	github.com/coreservice-io/logrus_log v0.2.1
 	github.com/coreservice-io/redis_spr v0.1.30

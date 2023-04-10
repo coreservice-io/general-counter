@@ -20,16 +20,11 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 		return err
 	}
 
-	job.Start(
-		context.Background(),
-		spr_jb_name,
-		job.TYPE_PANIC_REDO,
-		// job interval in seconds
-		agg_upload_interval_secs,
-		nil,
-		nil,
-		// job process
-		func(j *job.Job) {
+	job.Start(context.Background(), job.JobConfig{
+		Name:          spr_jb_name,
+		Job_type:      job.TYPE_PANIC_REDO,
+		Interval_secs: agg_upload_interval_secs,
+		Process_fn: func(j *job.Job) {
 			if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
 
 				date := time.Now().UTC().Format("2006-01-02")
@@ -86,15 +81,13 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 				}
 			}
 		},
-		// onPanic callback, run if panic happened
-		func(j *job.Job, err interface{}) {
+		On_panic: func(job *job.Job, panic_err interface{}) {
 			gcounter.logger.Errorln(spr_jb_name, err)
 		},
-		// onFinish callback
-		func(inst *job.Job) {
+		Final_fn: func(j *job.Job) {
 			gcounter.logger.Debugln(spr_jb_name + " spr job stop")
 		},
-	)
+	}, nil)
 
 	return nil
 }
@@ -110,32 +103,29 @@ func (gcounter *GeneralCounter) deleteExpireUploadedAggRecords(agg_record_expire
 
 	job.Start(
 		context.Background(),
-		spr_jb_name,
-		job.TYPE_PANIC_REDO,
-		// job interval in seconds
-		delete_expire_agg_interval_secs,
-		nil,
-		nil,
-		// job process
-		func(j *job.Job) {
-			if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
-				// delete uploaded expire record
-				agg_record_expire_days = agg_record_expire_days + 1 //+1 for safety boundary
-				date := time.Now().UTC().AddDate(0, 0, -agg_record_expire_days).Format("2006-01-02")
-				err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("date < ? AND status = ?", date, upload_status_uploaded).Delete(&GCounterDailyAggModel{}).Error
-				if err != nil {
-					gcounter.logger.Errorln(spr_jb_name+" agg del sql err:", err)
+		job.JobConfig{
+			Name:          spr_jb_name,
+			Job_type:      job.TYPE_PANIC_REDO,
+			Interval_secs: delete_expire_agg_interval_secs,
+			Process_fn: func(j *job.Job) {
+				if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
+					// delete uploaded expire record
+					agg_record_expire_days = agg_record_expire_days + 1 //+1 for safety boundary
+					date := time.Now().UTC().AddDate(0, 0, -agg_record_expire_days).Format("2006-01-02")
+					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("date < ? AND status = ?", date, upload_status_uploaded).Delete(&GCounterDailyAggModel{}).Error
+					if err != nil {
+						gcounter.logger.Errorln(spr_jb_name+" agg del sql err:", err)
+					}
 				}
-			}
+			},
+			On_panic: func(job *job.Job, panic_err interface{}) {
+				gcounter.logger.Errorln(spr_jb_name, err)
+			},
+			Final_fn: func(j *job.Job) {
+				gcounter.logger.Debugln(spr_jb_name + " spr job stop")
+			},
 		},
-		// onPanic callback, run if panic happened
-		func(j *job.Job, err interface{}) {
-			gcounter.logger.Errorln(spr_jb_name, err)
-		},
-		// onFinish callback
-		func(inst *job.Job) {
-			gcounter.logger.Debugln(spr_jb_name + " spr job stop")
-		},
+		nil,
 	)
 
 	return nil

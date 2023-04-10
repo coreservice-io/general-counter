@@ -18,16 +18,11 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 		return err
 	}
 
-	job.Start(
-		context.Background(),
-		spr_jb_name,
-		job.TYPE_PANIC_REDO,
-		// job interval in seconds
-		detail_upload_interval_secs,
-		nil,
-		nil,
-		// job process
-		func(j *job.Job) {
+	job.Start(context.Background(), job.JobConfig{
+		Name:          spr_jb_name,
+		Job_type:      job.TYPE_PANIC_REDO,
+		Interval_secs: detail_upload_interval_secs,
+		Process_fn: func(j *job.Job) {
 			if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
 				for {
 					var detail_list []*GCounterDetailModel
@@ -79,15 +74,15 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 				}
 			}
 		},
-		// onPanic callback, run if panic happened
-		func(j *job.Job, err interface{}) {
+
+		On_panic: func(job *job.Job, panic_err interface{}) {
 			gcounter.logger.Errorln(spr_jb_name, err)
 		},
-		// onFinish callback
-		func(inst *job.Job) {
+
+		Final_fn: func(j *job.Job) {
 			gcounter.logger.Errorln(spr_jb_name + " spr job stop")
 		},
-	)
+	}, nil)
 
 	return nil
 }
