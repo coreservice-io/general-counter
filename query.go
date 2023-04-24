@@ -183,8 +183,8 @@ func (gcounter_ *GeneralCounter) QueryDetail(gkey string, gtype string, startDat
 		Index(gcounter_.gcounter_config.Project_name+"_"+TABLE_NAME_G_COUNTER_DETAIL).
 		Query(generalQ).        // specify the query
 		Sort("datetime", true). // sort by "user" field, ascending
-		// Size(365). //
 		// Pretty(true).                            // pretty print request and response JSON
+		Size(10000). // aws opensearch default max size 10000
 		Do(context.Background()) // execute
 	if err != nil {
 		return nil, err
