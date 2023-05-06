@@ -11,7 +11,7 @@ type GCounterModel struct {
 	Id     string `json:"id" gorm:"type:varchar(512);uniqueIndex;"`  // this is elastic id , [gkey]:[gtype]
 	Gkey   string `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
 	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
-	Amount BigInt `json:"amount" gorm:"type:numeric(36,18);index;"`
+	Amount BigInt `json:"amount" gorm:"type:numeric(60,0);index;"`
 }
 
 func (model *GCounterModel) TableName() string {
@@ -32,7 +32,7 @@ type GCounterDailyAggModel struct {
 	Gkey   string `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
 	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
 	Date   string `json:"date" gorm:"type:date;index;"`
-	Amount BigInt `json:"amount" gorm:"type:numeric(36,18);"`
+	Amount BigInt `json:"amount" gorm:"type:numeric(60,0);"`
 	Status string `json:"status" gorm:"type:varchar(32);index;"`
 }
 
@@ -57,7 +57,7 @@ type GCounterDetailModel struct {
 	Gkey     string `json:"gkey" gorm:"type:varchar(512);index;"`       // can be anything like 'userid','accountid',etc.
 	Gtype    string `json:"gtype" gorm:"type:varchar(512);index;"`      // can be anything like 'user_credit','account_traffic',etc.
 	Datetime string `json:"datetime" gorm:"type:datetime(6);index;"`
-	Amount   BigInt `json:"amount" gorm:"numeric(36,18);"`
+	Amount   BigInt `json:"amount" gorm:"numeric(60,0);"`
 	Msg      string `json:"msg" gorm:"type:longtext;"`
 }
 

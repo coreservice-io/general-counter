@@ -61,7 +61,7 @@ func (b *BigInt) Scan(value interface{}) error {
 			return fmt.Errorf("failed to load value from str: %v", str)
 		}
 	default:
-		return fmt.Errorf("Could not scan type %T into BigInt", t)
+		return fmt.Errorf("could not scan type %T into BigInt", t)
 	}
 
 	return nil
