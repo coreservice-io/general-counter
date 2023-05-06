@@ -32,7 +32,7 @@ type GcOpDetailConfig struct {
 type GcOp struct {
 	Gkey          string
 	Gtype         string
-	Amount        int64
+	Amount        BigInt
 	Total_config  *GcOpTotalConfig
 	Agg_config    *GcOpAggConfig
 	Detail_config *GcOpDetailConfig
@@ -133,7 +133,7 @@ func (gcop *GcOp) run(tx *gorm.DB, aggExpireDays int64) error {
 		}
 
 		var create_result *gorm.DB
-		if gcop.Amount >= 0 || gcop.Total_config.AllowNegative {
+		if gcop.Amount.Sign() >= 0 || gcop.Total_config.AllowNegative {
 			create_result = tx.Table(TABLE_NAME_G_COUNTER).Clauses(clause.OnConflict{
 				DoUpdates: clause.Assignments(map[string]interface{}{"amount": gorm.Expr("amount + ?", gcop.Amount)}),
 			}).Create(to_create_agg)
@@ -147,9 +147,8 @@ func (gcop *GcOp) run(tx *gorm.DB, aggExpireDays int64) error {
 			}
 
 		} else {
-
 			update_result := tx.Table(TABLE_NAME_G_COUNTER).Where("id = ? ", id).
-				Where("amount >= ?", -gcop.Amount).Update("amount", gorm.Expr("amount + ?", gcop.Amount))
+				Where("amount >= ?", gcop.Amount.Abs()).Update("amount", gorm.Expr("amount + ?", gcop.Amount))
 
 			if update_result.Error != nil {
 				return errors.New("gcop total counter update error ,err:" + update_result.Error.Error())
@@ -177,7 +176,7 @@ type GcTx struct {
 }
 
 func (gctx *GcTx) AppendOp(gcop *GcOp) *GcTx {
-	if gcop != nil && gcop.Amount != 0 {
+	if gcop != nil && gcop.Amount.Sign() != 0 {
 		gctx.item_list = append(gctx.item_list, gcop)
 	}
 	return gctx
@@ -212,7 +211,7 @@ func (gctx *GcTx) Commit() error {
 		case *GcFunc:
 			all_empty = false
 		case *GcOp:
-			if v.Amount != 0 {
+			if v.Amount.Sign() != 0 {
 				all_empty = false
 			}
 		default:

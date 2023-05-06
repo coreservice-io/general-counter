@@ -34,7 +34,7 @@ PUT /{project_name}_g_counter_daily_agg
                 "format": "yyyy-MM-dd"
             },
             "amount": {
-               "type": "long"
+               "type": "keyword"
             }
         }
     }
@@ -69,7 +69,7 @@ PUT /{project_name}_g_counter_detail
                 "format": "yyyy-MM-dd HH:mm:ss"
             },
             "amount": {
-               "type": "long"
+               "type": "keyword"
             },
             "msg": {
                 "type": "text",

@@ -29,6 +29,7 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 
 				date := time.Now().UTC().Format("2006-01-02")
 
+				tblname := gcounter.gcounter_config.Project_name + "_" + TABLE_NAME_G_COUNTER_DAILY_AGG
 				for {
 					var agg_list []*GCounterDailyAggModel
 					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("status IN ? AND date != ?", []string{upload_status_uploading, upload_status_to_upload}, date).Order("id asc").Limit(MAX_AGG_UPLOAD_ITEMS_NUM).Find(&agg_list).Error
@@ -57,13 +58,20 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 
 						logs := []interface{}{}
 						for _, agg := range agg_list {
-							logs = append(logs, agg)
+							log := &GCounterDailyAggEsModel{
+								Sql_id: agg.Sql_id,
+								Id:     agg.Id,
+								Gkey:   agg.Gkey,
+								Gtype:  agg.Gtype,
+								Date:   agg.Date,
+								Amount: agg.Amount.String(),
+							}
+							logs = append(logs, log)
 						}
 
-						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(gcounter.gcounter_config.Project_name+"_"+TABLE_NAME_G_COUNTER_DAILY_AGG, logs)
-
+						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(tblname, logs)
 						if add_log_err != nil {
-							gcounter.logger.Errorln(spr_jb_name+" upload log err:", err)
+							gcounter.logger.Errorln(spr_jb_name+" upload "+tblname+" log err:", add_log_err)
 							return
 						}
 

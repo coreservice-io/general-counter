@@ -2,6 +2,7 @@ package general_counter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/coreservice-io/job"
 )
@@ -24,6 +25,8 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 		Interval_secs: detail_upload_interval_secs,
 		Process_fn: func(j *job.Job) {
 			if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
+				tblname := gcounter.gcounter_config.Project_name + "_" + TABLE_NAME_G_COUNTER_DETAIL
+
 				for {
 					var detail_list []*GCounterDetailModel
 					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DETAIL).Order("id asc").Limit(MAX_DETAIL_UPLOAD_ITEMS_NUM).Find(&detail_list).Error
@@ -38,14 +41,22 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 
 						logs := []interface{}{}
 						for _, detail := range detail_list {
-							detail.Datetime = detail.Datetime[:19]
-							logs = append(logs, detail)
+							log := &GCounterDetailEsModel{
+								Sql_id:   detail.Sql_id,
+								Id:       detail.Id,
+								Gkey:     detail.Gkey,
+								Gtype:    detail.Gtype,
+								Datetime: detail.Datetime[:19],
+								Amount:   detail.Amount.String(),
+								Msg:      detail.Msg,
+							}
+							logs = append(logs, log)
 						}
 
-						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(gcounter.gcounter_config.Project_name+"_"+TABLE_NAME_G_COUNTER_DETAIL, logs)
-
+						fmt.Println("uploading ==================")
+						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(tblname, logs)
 						if add_log_err != nil {
-							gcounter.logger.Errorln(spr_jb_name+" upload log err:", err)
+							gcounter.logger.Errorln(spr_jb_name+" upload "+tblname+" log err:", add_log_err)
 							return
 						}
 

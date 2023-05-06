@@ -95,7 +95,7 @@ func (gcounter_ *GeneralCounter) QueryAgg(gkey string, gtype string, startDate s
 	query.Where("gtype = ?", gtype)
 	query.Where("date >= ?", startDate)
 	query.Where("date <= ?", endDate)
-	query.Where("status = ?", upload_status_to_upload)  // just ignore uploading and uploaded data
+	query.Where("status = ?", upload_status_to_upload) // just ignore uploading and uploaded data
 
 	db_err := query.Find(&db_result).Error
 	if db_err != nil {
@@ -125,7 +125,7 @@ func (gcounter_ *GeneralCounter) QueryAgg(gkey string, gtype string, startDate s
 				Gkey:   gkey,
 				Gtype:  gtype,
 				Date:   dayloop_str,
-				Amount: 0,
+				Amount: *NewBigInt(0),
 			}
 		}
 		dayloop = dayloop.Add(24 * time.Hour)
@@ -184,7 +184,7 @@ func (gcounter_ *GeneralCounter) QueryDetail(gkey string, gtype string, startDat
 		Query(generalQ).        // specify the query
 		Sort("datetime", true). // sort by "user" field, ascending
 		// Pretty(true).                            // pretty print request and response JSON
-		Size(10000). // aws opensearch default max size 10000
+		Size(10000).             // aws opensearch default max size 10000
 		Do(context.Background()) // execute
 	if err != nil {
 		return nil, err

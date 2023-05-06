@@ -11,7 +11,7 @@ type GCounterModel struct {
 	Id     string `json:"id" gorm:"type:varchar(512);uniqueIndex;"`  // this is elastic id , [gkey]:[gtype]
 	Gkey   string `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
 	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
-	Amount int64  `json:"amount" gorm:"type:bigint(20);index;"`
+	Amount BigInt `json:"amount" gorm:"type:numeric(36,18);index;"`
 }
 
 func (model *GCounterModel) TableName() string {
@@ -32,8 +32,17 @@ type GCounterDailyAggModel struct {
 	Gkey   string `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
 	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
 	Date   string `json:"date" gorm:"type:date;index;"`
-	Amount int64  `json:"amount" gorm:"type:bigint(20);"`
+	Amount BigInt `json:"amount" gorm:"type:numeric(36,18);"`
 	Status string `json:"status" gorm:"type:varchar(32);index;"`
+}
+
+type GCounterDailyAggEsModel struct {
+	Sql_id int64  `json:"sql_id"`
+	Id     string `json:"id"`
+	Gkey   string `json:"gkey"`
+	Gtype  string `json:"gtype"`
+	Date   string `json:"date"`
+	Amount string `json:"amount"`
 }
 
 func (model *GCounterDailyAggModel) TableName() string {
@@ -48,8 +57,18 @@ type GCounterDetailModel struct {
 	Gkey     string `json:"gkey" gorm:"type:varchar(512);index;"`       // can be anything like 'userid','accountid',etc.
 	Gtype    string `json:"gtype" gorm:"type:varchar(512);index;"`      // can be anything like 'user_credit','account_traffic',etc.
 	Datetime string `json:"datetime" gorm:"type:datetime(6);index;"`
-	Amount   int64  `json:"amount" gorm:"type:bigint(20);"`
+	Amount   BigInt `json:"amount" gorm:"numeric(36,18);"`
 	Msg      string `json:"msg" gorm:"type:longtext;"`
+}
+
+type GCounterDetailEsModel struct {
+	Sql_id   int64  `json:"sql_id"`
+	Id       string `json:"id"`
+	Gkey     string `json:"gkey"`
+	Gtype    string `json:"gtype"`
+	Datetime string `json:"datetime"`
+	Amount   string `json:"amount"`
+	Msg      string `json:"msg"`
 }
 
 func (model *GCounterDetailModel) TableName() string {
