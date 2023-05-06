@@ -2,7 +2,6 @@ package general_counter
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/coreservice-io/job"
 )
@@ -53,7 +52,6 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 							logs = append(logs, log)
 						}
 
-						fmt.Println("uploading ==================")
 						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(tblname, logs)
 						if add_log_err != nil {
 							gcounter.logger.Errorln(spr_jb_name+" upload "+tblname+" log err:", add_log_err)
