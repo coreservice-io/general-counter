@@ -58,15 +58,7 @@ func (gcounter *GeneralCounter) startAggUploader() error {
 
 						logs := []interface{}{}
 						for _, agg := range agg_list {
-							log := &GCounterDailyAggEsModel{
-								Sql_id: agg.Sql_id,
-								Id:     agg.Id,
-								Gkey:   agg.Gkey,
-								Gtype:  agg.Gtype,
-								Date:   agg.Date,
-								Amount: agg.Amount.String(),
-							}
-							logs = append(logs, log)
+							logs = append(logs, agg)
 						}
 
 						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(tblname, logs)

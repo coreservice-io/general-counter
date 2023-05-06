@@ -36,15 +36,6 @@ type GCounterDailyAggModel struct {
 	Status string `json:"status" gorm:"type:varchar(32);index;"`
 }
 
-type GCounterDailyAggEsModel struct {
-	Sql_id int64  `json:"sql_id"`
-	Id     string `json:"id"`
-	Gkey   string `json:"gkey"`
-	Gtype  string `json:"gtype"`
-	Date   string `json:"date"`
-	Amount string `json:"amount"`
-}
-
 func (model *GCounterDailyAggModel) TableName() string {
 	return TABLE_NAME_G_COUNTER_DAILY_AGG
 }
@@ -59,16 +50,6 @@ type GCounterDetailModel struct {
 	Datetime string `json:"datetime" gorm:"type:datetime(6);index;"`
 	Amount   BigInt `json:"amount" gorm:"numeric(60,0);"`
 	Msg      string `json:"msg" gorm:"type:longtext;"`
-}
-
-type GCounterDetailEsModel struct {
-	Sql_id   int64  `json:"sql_id"`
-	Id       string `json:"id"`
-	Gkey     string `json:"gkey"`
-	Gtype    string `json:"gtype"`
-	Datetime string `json:"datetime"`
-	Amount   string `json:"amount"`
-	Msg      string `json:"msg"`
 }
 
 func (model *GCounterDetailModel) TableName() string {

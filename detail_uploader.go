@@ -40,16 +40,8 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 
 						logs := []interface{}{}
 						for _, detail := range detail_list {
-							log := &GCounterDetailEsModel{
-								Sql_id:   detail.Sql_id,
-								Id:       detail.Id,
-								Gkey:     detail.Gkey,
-								Gtype:    detail.Gtype,
-								Datetime: detail.Datetime[:19],
-								Amount:   detail.Amount.String(),
-								Msg:      detail.Msg,
-							}
-							logs = append(logs, log)
+							detail.Datetime = detail.Datetime[:19]
+							logs = append(logs, detail)
 						}
 
 						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(tblname, logs)
