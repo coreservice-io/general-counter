@@ -24,6 +24,8 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 		Interval_secs: detail_upload_interval_secs,
 		Process_fn: func(j *job.Job) {
 			if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
+				tblname := gcounter.gcounter_config.Project_name + "_" + TABLE_NAME_G_COUNTER_DETAIL
+
 				for {
 					var detail_list []*GCounterDetailModel
 					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DETAIL).Order("id asc").Limit(MAX_DETAIL_UPLOAD_ITEMS_NUM).Find(&detail_list).Error
@@ -42,10 +44,9 @@ func (gcounter *GeneralCounter) startDetailUploader() error {
 							logs = append(logs, detail)
 						}
 
-						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(gcounter.gcounter_config.Project_name+"_"+TABLE_NAME_G_COUNTER_DETAIL, logs)
-
+						sids, add_log_err := gcounter.ecs_uplaoder.AddLogs_Sync(tblname, logs)
 						if add_log_err != nil {
-							gcounter.logger.Errorln(spr_jb_name+" upload log err:", err)
+							gcounter.logger.Errorln(spr_jb_name+" upload "+tblname+" log err:", add_log_err)
 							return
 						}
 

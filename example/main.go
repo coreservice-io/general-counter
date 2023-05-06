@@ -20,27 +20,27 @@ func main() {
 	llog.SetLevel(log.TraceLevel)
 
 	gcounter, err := general_counter.NewGeneralCounter(&general_counter.GeneralCounterConfig{
-		Project_name:           "", // config your own
+		Project_name:           "test_counter", // config your own
 		Agg_record_expire_days: 7,
 		Db_config: &general_counter.DBConfig{
-			Host:     "", // config your own
-			Port:     0,  // config your own
-			DbName:   "", // config your own
-			UserName: "", // config your own
-			Password: "", // config your own
+			Host:     "127.0.0.1", // config your own
+			Port:     3306,        // config your own
+			DbName:   "mysql",     // config your own
+			UserName: "root",      // config your own
+			Password: "123456",    // config your own
 		},
 		Ecs_config: &general_counter.EcsConfig{
-			Address:  "", // config your own
-			UserName: "", // config your own
-			Password: "", // config your own
+			Address:  "http://127.0.0.1:9200", // config your own
+			UserName: "",                      // config your own
+			Password: "",                      // config your own
 		},
 		Redis_config: &general_counter.RedisConfig{
-			Addr:     "",    // config your own
-			Port:     0,     // config your own
-			UserName: "",    // config your own
-			Password: "",    // config your own
-			Prefix:   "",    // config your own
-			UseTLS:   false, // config your own
+			Addr:     "127.0.0.1", // config your own
+			Port:     5432,        // config your own
+			UserName: "",          // config your own
+			Password: "",          // config your own
+			Prefix:   "",          // config your own
+			UseTLS:   false,       // config your own
 		},
 	}, llog)
 
@@ -48,13 +48,16 @@ func main() {
 		panic(err)
 	}
 
+	// neg200 := general_counter.NewBigInt(1000000000000000000)
+	veryBig, _ := general_counter.NewBigIntFromString("100000000000000000000000000000")
+
 	commit_err := gcounter.CreateTx().AppendFunc(func(tx *gorm.DB) error {
 		fmt.Println("this is first func")
 		return nil
 	}).AppendOp(&general_counter.GcOp{
 		Gkey:   "userid13",
 		Gtype:  "total_balance",
-		Amount: 200,
+		Amount: *veryBig,
 		Total_config: &general_counter.GcOpTotalConfig{
 			Enable:        true,
 			AllowNegative: false,
@@ -62,7 +65,7 @@ func main() {
 	}).AppendOp(&general_counter.GcOp{
 		Gkey:   "userid13",
 		Gtype:  "transfer_out",
-		Amount: -200,
+		Amount: *veryBig.Neg(),
 		Total_config: &general_counter.GcOpTotalConfig{
 			Enable:        true,
 			AllowNegative: true,
@@ -74,7 +77,7 @@ func main() {
 	}).AppendOp(&general_counter.GcOp{
 		Gkey:   "userid14",
 		Gtype:  "transfer_in",
-		Amount: 200,
+		Amount: *veryBig,
 		Total_config: &general_counter.GcOpTotalConfig{
 			Enable:        true,
 			AllowNegative: false,
@@ -90,14 +93,14 @@ func main() {
 
 	fmt.Println(commit_err)
 
-	result, err := gcounter.QueryTotal("userid1", "total_balance")
+	result, err := gcounter.QueryTotal("userid13", "total_balance")
 	if err != nil {
 		fmt.Println("query err:", err)
 	} else {
 		fmt.Println(result)
 	}
 
-	result, err = gcounter.QueryTotal("userid3", "total_balance")
+	result, err = gcounter.QueryTotal("userid14", "total_balance")
 	if err != nil {
 		fmt.Println("query err:", err)
 	} else {
