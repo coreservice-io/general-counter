@@ -2,6 +2,7 @@ package general_counter
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -180,14 +181,40 @@ func (gctx *GcTx) AppendOp(gcop *GcOp) *GcTx {
 		return gctx
 	}
 
-	if gcop.Gkey == "" || gcop.Gtype == "" || gcop.Amount == nil {
-		return gctx
+	gctx.item_list = append(gctx.item_list, gcop)
+	return gctx
+}
+
+func (gctx *GcTx) AppendOpEx(gcop *GcOp) error {
+	if err := AppendOpCheck(gcop); err != nil {
+		return err
 	}
 
-	if gcop.Amount.Sign() != 0 {
-		gctx.item_list = append(gctx.item_list, gcop)
+	gctx.item_list = append(gctx.item_list, gcop)
+	return nil
+}
+
+func AppendOpCheck(gcop *GcOp) error {
+	if gcop == nil {
+		return errors.New("gcop is nil")
 	}
-	return gctx
+
+	if gcop.Gkey == "" || gcop.Gtype == "" || gcop.Amount == nil {
+		return errors.New(fmt.Sprintf("Gkey is empty %v", gcop))
+	}
+
+	if gcop.Gkey == "" || gcop.Gtype == "" || gcop.Amount == nil {
+		return errors.New(fmt.Sprintf("Gtype is empty %v", gcop))
+	}
+
+	if gcop.Gkey == "" || gcop.Gtype == "" || gcop.Amount == nil {
+		return errors.New(fmt.Sprintf("Amount is empty %v", gcop))
+	}
+
+	if gcop.Amount.Sign() == 0 {
+		return errors.New(fmt.Sprintf("Amount is zero %v", gcop))
+	}
+	return nil
 }
 
 func (gctx *GcTx) AppendFunc(txfunc func(tx *gorm.DB) error) *GcTx {
@@ -229,6 +256,14 @@ func (gctx *GcTx) Commit() error {
 
 	if all_empty {
 		return nil
+	}
+
+	for _, item := range gctx.item_list {
+		if gcop, ok := item.(*GcOp); ok {
+			if err := AppendOpCheck(gcop); err != nil {
+				return err
+			}
+		}
 	}
 
 	// use global lock to avoid db dead lock
