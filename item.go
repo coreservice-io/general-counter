@@ -30,9 +30,9 @@ type GcOpDetailConfig struct {
 }
 
 type GcOp struct {
-	Gkey          string
-	Gtype         string
-	Amount        *BigInteger
+	Gkey          string      // NOT NULL
+	Gtype         string      // NOT NULL
+	Amount        *BigInteger // NOT NULL
 	Total_config  *GcOpTotalConfig
 	Agg_config    *GcOpAggConfig
 	Detail_config *GcOpDetailConfig
@@ -176,7 +176,15 @@ type GcTx struct {
 }
 
 func (gctx *GcTx) AppendOp(gcop *GcOp) *GcTx {
-	if gcop != nil && gcop.Amount.Sign() != 0 {
+	if gcop == nil {
+		return gctx
+	}
+
+	if gcop.Gkey == "" || gcop.Gtype == "" || gcop.Amount == nil {
+		return gctx
+	}
+
+	if gcop.Amount.Sign() != 0 {
 		gctx.item_list = append(gctx.item_list, gcop)
 	}
 	return gctx

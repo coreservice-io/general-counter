@@ -19,9 +19,7 @@ func (gcounter_ *GeneralCounter) QueryTotal(gkey string, gtype string) (*GCounte
 		return nil, query.Error
 	}
 	if query.RowsAffected == 0 {
-		result.Id = gkey + ":" + gtype
-		result.Gkey = gkey
-		result.Gtype = gtype
+		return nil, nil
 	}
 
 	return result, nil
@@ -37,6 +35,9 @@ func (gcounter_ *GeneralCounter) QueryTotalBatch(gkeys []string, gtype string) (
 	query := gcounter_.db.Table(TABLE_NAME_G_COUNTER).Where("id IN ?", ids).Find(&result)
 	if query.Error != nil {
 		return nil, query.Error
+	}
+	if query.RowsAffected == 0 {
+		return nil, nil
 	}
 
 	return result, nil
@@ -143,6 +144,8 @@ func (gcounter_ *GeneralCounter) QueryAgg(gkey string, gtype string, startDate s
 		sort.Slice(result, func(i, j int) bool {
 			return result[i].Date < result[j].Date
 		})
+	} else {
+		return nil, nil
 	}
 
 	return result, nil
@@ -219,6 +222,8 @@ func (gcounter_ *GeneralCounter) QueryDetail(gkey string, gtype string, startDat
 		sort.Slice(result_array, func(i, j int) bool {
 			return result_array[i].Datetime < result_array[j].Datetime
 		})
+	} else {
+		return nil, nil
 	}
 
 	return result_array, nil
