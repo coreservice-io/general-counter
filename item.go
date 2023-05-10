@@ -32,7 +32,7 @@ type GcOpDetailConfig struct {
 type GcOp struct {
 	Gkey          string
 	Gtype         string
-	Amount        BigInt
+	Amount        *BigInteger
 	Total_config  *GcOpTotalConfig
 	Agg_config    *GcOpAggConfig
 	Detail_config *GcOpDetailConfig

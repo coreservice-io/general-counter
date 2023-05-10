@@ -7,11 +7,11 @@ const TABLE_NAME_G_COUNTER_DETAIL = "g_counter_detail"
 // used only in sqldb
 // table name :g_counter
 type GCounterModel struct {
-	Sql_id int64  `json:"sql_id" gorm:"type:bigint(20);primaryKey;"` // auto increasement
-	Id     string `json:"id" gorm:"type:varchar(512);uniqueIndex;"`  // this is elastic id , [gkey]:[gtype]
-	Gkey   string `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
-	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
-	Amount BigInt `json:"amount" gorm:"type:numeric(60,0);index;"`
+	Sql_id int64       `json:"sql_id" gorm:"type:bigint(20);primaryKey;"` // auto increasement
+	Id     string      `json:"id" gorm:"type:varchar(512);uniqueIndex;"`  // this is elastic id , [gkey]:[gtype]
+	Gkey   string      `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
+	Gtype  string      `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
+	Amount *BigInteger `json:"amount" gorm:"type:numeric(60,0);index;"`
 }
 
 func (model *GCounterModel) TableName() string {
@@ -27,13 +27,13 @@ const (
 // used in elastic search db
 // table name:g_counter_daily_agg
 type GCounterDailyAggModel struct {
-	Sql_id int64  `json:"sql_id" gorm:"type:bigint(20);primaryKey;"` // db id ,auto increasement
-	Id     string `json:"id" gorm:"type:varchar(512);uniqueIndex;"`  // this is elastic id ,[date]:[gkey]:[gtype] => elastic search id
-	Gkey   string `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
-	Gtype  string `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
-	Date   string `json:"date" gorm:"type:date;index;"`
-	Amount BigInt `json:"amount" gorm:"type:numeric(60,0);"`
-	Status string `json:"status" gorm:"type:varchar(32);index;"`
+	Sql_id int64       `json:"sql_id" gorm:"type:bigint(20);primaryKey;"` // db id ,auto increasement
+	Id     string      `json:"id" gorm:"type:varchar(512);uniqueIndex;"`  // this is elastic id ,[date]:[gkey]:[gtype] => elastic search id
+	Gkey   string      `json:"gkey" gorm:"type:varchar(512);index;"`      // can be anything like 'userid','accountid',etc.
+	Gtype  string      `json:"gtype" gorm:"type:varchar(512);index;"`     // can be anything like 'user_credit','account_traffic',etc.
+	Date   string      `json:"date" gorm:"type:date;index;"`
+	Amount *BigInteger `json:"amount" gorm:"type:numeric(60,0);"`
+	Status string      `json:"status" gorm:"type:varchar(32);index;"`
 }
 
 func (model *GCounterDailyAggModel) TableName() string {
@@ -43,13 +43,13 @@ func (model *GCounterDailyAggModel) TableName() string {
 // used in elastic search db
 // table name :g_counter_detail
 type GCounterDetailModel struct {
-	Sql_id   int64  `json:"sql_id"  gorm:"type:bigint(20);primaryKey;"` // db id ,auto increasement
-	Id       string `json:"id" gorm:"type:varchar(512);uniqueIndex;"`   // this is elastic id ,assign db_id => elastic search id
-	Gkey     string `json:"gkey" gorm:"type:varchar(512);index;"`       // can be anything like 'userid','accountid',etc.
-	Gtype    string `json:"gtype" gorm:"type:varchar(512);index;"`      // can be anything like 'user_credit','account_traffic',etc.
-	Datetime string `json:"datetime" gorm:"type:datetime(6);index;"`
-	Amount   BigInt `json:"amount" gorm:"numeric(60,0);"`
-	Msg      string `json:"msg" gorm:"type:longtext;"`
+	Sql_id   int64       `json:"sql_id"  gorm:"type:bigint(20);primaryKey;"` // db id ,auto increasement
+	Id       string      `json:"id" gorm:"type:varchar(512);uniqueIndex;"`   // this is elastic id ,assign db_id => elastic search id
+	Gkey     string      `json:"gkey" gorm:"type:varchar(512);index;"`       // can be anything like 'userid','accountid',etc.
+	Gtype    string      `json:"gtype" gorm:"type:varchar(512);index;"`      // can be anything like 'user_credit','account_traffic',etc.
+	Datetime string      `json:"datetime" gorm:"type:datetime(6);index;"`
+	Amount   *BigInteger `json:"amount" gorm:"numeric(60,0);"`
+	Msg      string      `json:"msg" gorm:"type:longtext;"`
 }
 
 func (model *GCounterDetailModel) TableName() string {

@@ -125,7 +125,7 @@ func (gcounter_ *GeneralCounter) QueryAgg(gkey string, gtype string, startDate s
 				Gkey:   gkey,
 				Gtype:  gtype,
 				Date:   dayloop_str,
-				Amount: *NewBigInt(0),
+				Amount: NewBigInteger(0),
 			}
 		}
 		dayloop = dayloop.Add(24 * time.Hour)

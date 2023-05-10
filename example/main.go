@@ -48,8 +48,8 @@ func main() {
 		panic(err)
 	}
 
-	// neg200 := general_counter.NewBigInt(1000000000000000000)
-	veryBig, _ := general_counter.NewBigIntFromString("100000000000000000000000000000")
+	// neg200 := general_counter.NewBigInteger(1000000000000000000)
+	veryBig, _ := general_counter.NewBigIntegerFromString("100000000000000000000000000000")
 
 	commit_err := gcounter.CreateTx().AppendFunc(func(tx *gorm.DB) error {
 		fmt.Println("this is first func")
@@ -57,7 +57,7 @@ func main() {
 	}).AppendOp(&general_counter.GcOp{
 		Gkey:   "userid13",
 		Gtype:  "total_balance",
-		Amount: *veryBig,
+		Amount: veryBig,
 		Total_config: &general_counter.GcOpTotalConfig{
 			Enable:        true,
 			AllowNegative: false,
@@ -65,7 +65,7 @@ func main() {
 	}).AppendOp(&general_counter.GcOp{
 		Gkey:   "userid13",
 		Gtype:  "transfer_out",
-		Amount: *veryBig.Neg(),
+		Amount: veryBig.Neg(),
 		Total_config: &general_counter.GcOpTotalConfig{
 			Enable:        true,
 			AllowNegative: true,
@@ -77,7 +77,7 @@ func main() {
 	}).AppendOp(&general_counter.GcOp{
 		Gkey:   "userid14",
 		Gtype:  "transfer_in",
-		Amount: *veryBig,
+		Amount: veryBig,
 		Total_config: &general_counter.GcOpTotalConfig{
 			Enable:        true,
 			AllowNegative: false,
