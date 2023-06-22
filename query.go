@@ -228,3 +228,88 @@ func (gcounter_ *GeneralCounter) QueryDetail(gkey string, gtype string, startDat
 
 	return result_array, nil
 }
+
+func (gcounter_ *GeneralCounter) QueryAggByGtype(gtype string, startDate string, endDate string) ([]*GCounterDailyAggModel, error) {
+	// check date
+	startTime, err := time.Parse("2006-01-02", startDate)
+	if err != nil {
+		return nil, errors.New("start date error")
+	}
+
+	endTime, err := time.Parse("2006-01-02", endDate)
+	if err != nil {
+		return nil, errors.New("end date error")
+	}
+
+	duration := endTime.Sub(startTime)
+	if duration < 0 {
+		return nil, errors.New("start date is greater than end date")
+	}
+	totaldays := int(duration.Hours()/24 + 1)
+	if totaldays > 365*3 {
+		// only do limit for safe, real limit should be in api
+		return nil, errors.New("too big date range")
+	}
+
+	// query ecs
+	generalQ := elasticsearch.NewBoolQuery().
+		Must(elasticsearch.NewRangeQuery("date").From(startDate).To(endDate)).
+		Must(elasticsearch.NewTermQuery("gtype", gtype))
+
+	searchResult, err := gcounter_.ecs.Search().
+		Index(gcounter_.gcounter_config.Project_name+"_"+TABLE_NAME_G_COUNTER_DAILY_AGG).
+		Query(generalQ).    // specify the query
+		Sort("date", true). // sort by "user" field, ascending
+		Size(10000).             // aws opensearch default max size 10000
+		// Pretty(true).                            // pretty print request and response JSON
+		Do(context.Background()) // execute
+	if err != nil {
+		return nil, err
+	}
+
+	aggData := []*GCounterDailyAggModel{}
+	var cbdLog GCounterDailyAggModel
+	for _, item := range searchResult.Each(reflect.TypeOf(cbdLog)) {
+		itemlog := item.(GCounterDailyAggModel)
+		aggData=append(aggData, &itemlog)
+	}
+
+	// query db
+	db_result := []*GCounterDailyAggModel{}
+	query := gcounter_.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG)
+	query.Where("gtype = ?", gtype)
+	query.Where("date >= ?", startDate)
+	query.Where("date <= ?", endDate)
+	query.Where("status = ?", upload_status_to_upload) // just ignore uploading and uploaded data
+
+	db_err := query.Find(&db_result).Error
+	if db_err != nil {
+		return nil, db_err
+	}
+
+	// if same key exist in db and ecs, just use db data
+	newRecord:=[]*GCounterDailyAggModel{}
+	for _, db_v := range db_result {
+		for _,ecs_v:=range aggData{
+			//date and Gkey same
+			if ecs_v.Date==db_v.Date && ecs_v.Gkey==db_v.Gkey{
+				ecs_v.Amount=db_v.Amount
+			}else{
+				newRecord=append(newRecord, db_v)
+			}
+		}
+	}
+
+	aggData=append(aggData, newRecord...)
+
+
+	if len(aggData) > 0 {
+		sort.Slice(aggData, func(i, j int) bool {
+			return aggData[i].Date < aggData[j].Date
+		})
+	} else {
+		return nil, nil
+	}
+
+	return aggData, nil
+}
