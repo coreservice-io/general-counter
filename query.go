@@ -267,11 +267,11 @@ func (gcounter_ *GeneralCounter) QueryAggByGtype(gtype string, startDate string,
 		return nil, err
 	}
 
-	aggData := []*GCounterDailyAggModel{}
+	aggDataMap := map[string]*GCounterDailyAggModel{} //[]*GCounterDailyAggModel{}
 	var cbdLog GCounterDailyAggModel
 	for _, item := range searchResult.Each(reflect.TypeOf(cbdLog)) {
 		itemlog := item.(GCounterDailyAggModel)
-		aggData=append(aggData, &itemlog)
+		aggDataMap[itemlog.Date+":"+itemlog.Gkey] = &itemlog
 	}
 
 	// query db
@@ -288,28 +288,32 @@ func (gcounter_ *GeneralCounter) QueryAggByGtype(gtype string, startDate string,
 	}
 
 	// if same key exist in db and ecs, just use db data
-	newRecord:=[]*GCounterDailyAggModel{}
 	for _, db_v := range db_result {
-		for _,ecs_v:=range aggData{
-			//date and Gkey same
-			if ecs_v.Date==db_v.Date && ecs_v.Gkey==db_v.Gkey{
-				ecs_v.Amount=db_v.Amount
-			}else{
-				newRecord=append(newRecord, db_v)
-			}
+		key:=db_v.Date+":"+db_v.Gkey
+		_, exist := aggDataMap[key]
+		if exist {
+			aggDataMap[key].Amount = db_v.Amount
+		} else {
+			aggDataMap[key] = db_v
 		}
 	}
 
-	aggData=append(aggData, newRecord...)
+	// map to arry
+	result := make([]*GCounterDailyAggModel, len(aggDataMap))
+	index := 0
+	for _, value := range aggDataMap {
+		result[index] = value
+		index++
+	}
 
 
-	if len(aggData) > 0 {
-		sort.Slice(aggData, func(i, j int) bool {
-			return aggData[i].Date < aggData[j].Date
+	if len(result) > 0 {
+		sort.Slice(result, func(i, j int) bool {
+			return result[i].Date < result[j].Date
 		})
 	} else {
 		return nil, nil
 	}
 
-	return aggData, nil
+	return result, nil
 }
