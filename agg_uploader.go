@@ -110,8 +110,8 @@ func (gcounter *GeneralCounter) deleteExpireUploadedAggRecords(agg_record_expire
 			Process_fn: func(j *job.Job) {
 				if gcounter.spr_job_mgr.IsMaster(spr_jb_name) {
 					// delete uploaded expire record
-					agg_record_expire_days = agg_record_expire_days + 1 //+1 for safety boundary
-					date := time.Now().UTC().AddDate(0, 0, -agg_record_expire_days).Format("2006-01-02")
+					days := agg_record_expire_days + 1 //+1 for safety boundary
+					date := time.Now().UTC().AddDate(0, 0, -days).Format("2006-01-02")
 					err := gcounter.db.Table(TABLE_NAME_G_COUNTER_DAILY_AGG).Where("date < ? AND status = ?", date, upload_status_uploaded).Delete(&GCounterDailyAggModel{}).Error
 					if err != nil {
 						gcounter.logger.Errorln(spr_jb_name+" agg del sql err:", err)
